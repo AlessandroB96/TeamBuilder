@@ -27,7 +27,7 @@ describe('Intern', () => {
 
     describe('getSchool', () => {
         it('get intern school', () => {
-            const intern = new Intern(1, "Alessandro", "abelaj7196@gmail.com", "Columbia", "Intern");
+            const intern = new Intern(1, "Alessandro", "abelaj7196@gmail.com","Intern","Columbia");
 
             expect(intern.getSchool()).toBe("Columbia");
         });
