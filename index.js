@@ -1,42 +1,34 @@
 const inquirer = require('inquirer');
-const fs = require('fs');
 const Employee = require('./lib/Employee');
 const Manager = require('./lib/Manager');
 const Engineer = require('./lib/Engineer');
 const Intern = require('./lib/Intern');
+const generatePage = require('./src/template');
+const fs = require('fs');
 
-//starting with manager 
-let role = 'Manager';
-let employeeList = [];
-class Input {
+var employeeOptions = [];
+var role = 'Manager';
+
+class Index {
     constructor() {
         this.index = 0;
     }
-
-    
-    
-    getName(role) {
-        console.log(`
-        ==========================================
-        𝐖 𝐄 𝐋 𝐂 𝐎 𝐌 𝐄  𝐓 𝐎  𝐓 𝐄 𝐀 𝐌  𝐁 𝐔 𝐈 𝐋 𝐃 𝐄 𝐑
-        ==========================================
-        `);
+    getName(role){
         inquirer
             .prompt({
                 type: 'text',
                 name: 'name',
-                message: `What is the ${role}'s name?`,
-                validate: name => {
-                    if (name) {
+                message: `What is the ${role}'s name? (Required)`,
+                validate: nameInput => {
+                    if (nameInput) {
                         return true;
                     } else {
-                        console.log(`Please enter ${role} name!`);
+                        console.log(`Please enter the ${role} name!`);
                         return false;
                     } 
-                }  
+                } 
             })
             .then(({ name }) => {
-                //establishing new employee name
                 this.employee = new Employee(name);
                 this.getId(name,role)
             })
@@ -46,9 +38,9 @@ class Input {
             .prompt({
                 type: 'input',
                 name: 'id',
-                message: `What is the ${role}'s id?`,
-                validate: id => {
-                    if (id) {
+                message: `What is the ${role}'s id? (Required) `,
+                validate: idInput => {
+                    if (idInput) {
                         return true;
                     } else {
                         console.log('Please enter an id!');
@@ -56,20 +48,19 @@ class Input {
                     }
                 } 
             })
-                .then(({ id }) => {
-                    //saving id to employee class
-                    this.employee = new Employee(name, id);
-                    this.getEmail(name,id,role);
-                })
+            .then(({ id }) => {
+                this.employee = new Employee(id, name);
+                this.getEmail(id,name,role);
+            })
     }
     getEmail(name,id,role){
         inquirer
             .prompt({
                 type: 'string',
                 name: 'email',
-                message: `What is the ${role}'s email?`,
-                validate: email => {
-                    if (email) {
+                message: `What is the ${role}'s email? (Required)`,
+                validate: emailInput => {
+                    if (emailInput) {
                         return true;
                     } else {
                         console.log('Please enter an email address!');
@@ -78,135 +69,136 @@ class Input {
                 } 
             })
             .then(({ email }) => {
-                //save email to employee class
-                this.employee = new Employee(name, id, email);
-                this.getRole(name, id, email,role)
+                this.employee = new Employee(id, name, email);
+                this.getRole(id, name, email,role)
             })
     }
-    getRole(name,id,email,role){
-        //beginning of employee array = manager
+    getRole(id,name,email,role){
         if(this.index === 0){
             let role = 'Manager'
-            //adds to manager class
-            this.manager = new Manager(name, id, email, role);
-            this.getOfficeNumber(name, id, email, role);
+            this.manager = new Manager(id, name, email, role);
+            this.getOfficeNumber(id, name, email, role);
         } else {
-            //if Engineer
-            if (role === 'Engineer'){
-                this.engineer = new Engineer(name, id, email, role);
-                this.getGithub(name, id, email, role);
+            if (role === 'Intern'){
+                this.intern = new Intern(id, name, email, role);
+                this.getSchool(id, name, email, role);
             } else {
-                //if intern
-                this.intern = new Intern(name, id, email, role);
-                this.getSchool(name, id, email, role);
+                this.engineer = new Engineer(id, name, email, role);
+                this.getGithub(id, name, email, role);
+                
             }
+
         }
     }
-    getOfficeNumber(name,id,email,role){
-        //prompts user to input employee role
+    getOfficeNumber(id,name,email,role){
         inquirer
             .prompt({
                 type: 'input',
                 name: 'number',
-                message: `What is the Manager's office number?`,
+                message: `What is the Manager's office number? (Required)`,
                 validate: numberInput => {
                     if (numberInput) {
                         return true;
                     } else {
-                        console.log('Please enter number');
+                        console.log('Please enter an office number');
                         return false;
                     }
                 } 
             })
-            .then(({ number }) => {
-                this.manager = new Manager(name, id, email, role, number);
-                //adds new manager to employee list
-                employeeList.push(this.manager);
-                this.addEmployee(employeeList);
+            .then(({ officeNumber }) => {
+                this.manager = new Manager(id, name, email, role, officeNumber);
+                employeeOptions.push(this.manager);
+                this.addEmployee(employeeOptions);
             })
     }
-    getGithub(name,id,email,role){
+    getGithub(id, name,email,role){
         inquirer
             .prompt({
                 type: 'input',
                 name: 'github',
-                message: "What is the Engineer's github username?",
-                validate: github => {
-                    if (github) {
+                message: "What is the Engineer's github username? (Required)",
+                validate: githubInput => {
+                    if (githubInput) {
                         return true;
                     } else {
-                        console.log(`Please enter the engineer's github username!`);
+                        console.log(`Please enter the Engineer's github username!`);
                         return false;
                     }
                 } 
             })
             .then(({ github }) => {
-                this.engineer = new Engineer(name, id, email, role, github);
-                //add engineer to employee list
-                employeeList.push(this.engineer);
-                //goes to add employee method
-                this.addEmployee(employeeList);
+                this.engineer = new Engineer(id, name, email, role, github);
+                employeeOptions.push(this.engineer);
+                this.addEmployee(employeeOptions);
             })
     }
-    getSchool(name,id,email,role){
-        //prompts user to input employee role
+    getSchool(id,name,email,role){
         inquirer
             .prompt({
                 type: 'input',
                 name: 'school',
-                message: "What is the Intern's school?",
-                validate: school => {
-                    if (school) {
+                message: "What is the Intern's school? (Required)",
+                validate: schoolInput => {
+                    if (schoolInput) {
                         return true;
                     } else {
-                        console.log(`Please enter the intern's school!`);
+                        console.log(`Please enter the Intern's school or university!`);
                         return false;
                     }
                 } 
             })
             .then(({ school }) => {
-                this.intern = new Intern(name, id, email, role, school);
-                employeeList.push(this.intern);
-                // console.log(employeeArray)
-                this.addEmployee(employeeList);
+                this.intern = new Intern(id, name, email, role, school);
+                employeeOptions.push(this.intern);
+                this.addEmployee(employeeOptions);
             })
     }
-    addEmployee(employee){
+    addEmployee(employees){
         inquirer
-            // asks user if they want to add another employee
             .prompt({
                 type: 'confirm',
-                name: 'AddEmployee',
-                message: 'Would you like to add another employee?',
+                name: 'confirmAddEmployee',
+                message: 'Would you like to enter another employee?',
                 default: false
             })
-            .then(({ AddEmployee }) => {
-                //if the answer is yes
-                if (AddEmployee) {
-                    //increment to move away from the manager class
+            .then(({ confirmAddEmployee }) => {
+                if (confirmAddEmployee) {
                     this.index++;
-                    //shows a new employee is being added
-                    console.log(`
-                    𝘼 𝘿 𝘿   𝙉 𝙀 𝙒   𝙀 𝙈 𝙋 𝙇 𝙊 𝙔 𝙀 𝙀
-                    `);
                     inquirer
                         .prompt({
                             type: 'list',
                             name: 'role',
                             message: 'What is the employee role?',
-                            choices: ['Intern','Engineer']
+                            choices: ['Engineer','Intern']
                         })
                         .then(({ role }) => {
                             this.getName(role);
                         })
                 } else {
-                    console.log('File has been created!');
+                    writeFile(generatePage(employees));
+                    console.log('Your file has been created!');
                 }
             })
     }
+
 }
 
-new Input().getName(role)
+new Index().getName(role)
 
 
-module.exports = Input;
+const writeFile = fileContent => {
+    return new Promise((resolve, reject) => {
+        fs.writeFile('./dist/index.html', fileContent, err => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve({
+                ok: true,
+                message: 'Your file has been created!'
+            });
+        });
+    });
+};
+
+module.exports = Index;
