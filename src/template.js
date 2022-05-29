@@ -4,7 +4,7 @@ const generatePage = employeesArr => {
             <div class="employees">
             ${employeesArr
                 .filter(({ role }) => role ==='Manager')
-                .map(({ name, id, email, role, officeNumber }) => {
+                .map(({ id, name, email, officeNumber, role }) => {
                     return `
                         <div class="employee">
                             <div class="main-heading">
